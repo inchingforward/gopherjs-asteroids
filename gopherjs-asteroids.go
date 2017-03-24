@@ -1,21 +1,25 @@
 package main
 
 import (
+	"fmt"
+
 	"honnef.co/go/js/dom"
 )
 
+func update() {
+	fmt.Println("update")
+}
+
+func draw() {
+	fmt.Println("draw")
+}
+
+func gameLoop() {
+	update()
+	draw()
+	dom.GetWindow().SetTimeout(gameLoop, 1000/30)
+}
+
 func main() {
-	doc := dom.GetWindow().Document()
-	canvas := doc.GetElementByID("canvas").(*dom.HTMLCanvasElement)
-	ctx := canvas.GetContext2d()
-
-	ctx.FillStyle = "black"
-	ctx.StrokeStyle = "black"
-
-	ctx.BeginPath()
-	ctx.MoveTo(150, 150)
-	ctx.LineTo(250, 250)
-	ctx.LineTo(50, 250)
-	ctx.LineTo(150, 150)
-	ctx.Fill()
+	gameLoop()
 }
