@@ -6,9 +6,16 @@ import (
 
 func main() {
 	doc := dom.GetWindow().Document()
+	canvas := doc.GetElementByID("canvas").(*dom.HTMLCanvasElement)
+	ctx := canvas.GetContext2d()
 
-	elem := doc.CreateElement("p")
-	elem.SetInnerHTML("Hello, world!")
+	ctx.FillStyle = "black"
+	ctx.StrokeStyle = "black"
 
-	doc.GetElementsByTagName("body")[0].AppendChild(elem)
+	ctx.BeginPath()
+	ctx.MoveTo(150, 150)
+	ctx.LineTo(250, 250)
+	ctx.LineTo(50, 250)
+	ctx.LineTo(150, 150)
+	ctx.Fill()
 }
