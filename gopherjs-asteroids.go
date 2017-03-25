@@ -16,19 +16,8 @@ type Ship struct {
 	y int
 }
 
-// SaveContext pushes the current state onto the drawing stack.
-func SaveContext(ctx *dom.CanvasRenderingContext2D) {
-	ctx.Call("save")
-}
-
-// RestoreContext restores the most recently saved canvas state
-// from the drawing stack.
-func RestoreContext(ctx *dom.CanvasRenderingContext2D) {
-	ctx.Call("restore")
-}
-
 func (ship Ship) draw(ctx *dom.CanvasRenderingContext2D) {
-	SaveContext(ctx)
+	ctx.Save()
 	ctx.Translate(ship.x, ship.y)
 	ctx.StrokeStyle = "black"
 	ctx.LineWidth = 1
@@ -40,7 +29,7 @@ func (ship Ship) draw(ctx *dom.CanvasRenderingContext2D) {
 	ctx.LineTo(7, 10)
 	ctx.LineTo(0, -10)
 	ctx.Stroke()
-	RestoreContext(ctx)
+	ctx.Restore()
 }
 
 func update() {
