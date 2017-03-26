@@ -44,17 +44,13 @@ func (ship Ship) draw(ctx *dom.CanvasRenderingContext2D) {
 }
 
 func updateShip() {
-	rightAdjust := 0.0
 	if keysPressed.right {
-		rightAdjust = math.Pi / 16.0
+		ship.dir = ship.dir + math.Pi/16.0
 	}
 
-	leftAdjust := 0.0
 	if keysPressed.left {
-		leftAdjust = -math.Pi / 16.0
+		ship.dir = ship.dir + -math.Pi/16.0
 	}
-
-	ship.dir = ship.dir + rightAdjust + leftAdjust
 }
 
 func update() {
