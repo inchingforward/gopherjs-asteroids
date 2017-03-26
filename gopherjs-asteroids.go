@@ -3,13 +3,13 @@ package main
 import (
 	"math"
 
-	"honnef.co/go/js/dom"
+	"github.com/oskca/gopherjs-canvas"
+	"github.com/oskca/gopherjs-dom"
 )
 
 // A Ship is the player.
 type Ship struct {
-	x, y, dx, dy int
-	dir          float64
+	x, y, dx, dy, dir float64
 }
 
 // KeysPressed contains the current keys being pressed.
@@ -17,19 +17,25 @@ type KeysPressed struct {
 	left, right, thrust bool
 }
 
+const maxSpeed = 6.0
+
 var (
-	ship        *Ship
-	canvas      *dom.HTMLCanvasElement
-	ctx         *dom.CanvasRenderingContext2D
-	keysPressed *KeysPressed
+	ship         *Ship
+	cnvs         *canvas.Canvas
+	ctx          *canvas.Context2D
+	keysPressed  *KeysPressed
+	canvasWidth  float64
+	canvasHeight float64
 )
 
-func (ship Ship) draw(ctx *dom.CanvasRenderingContext2D) {
+func clamp(lo, hi, x float64) float64 {
+	return math.Max(lo, math.Min(hi, x))
+}
+
+func (ship Ship) draw(ctx *canvas.Context2D) {
 	ctx.Save()
 	ctx.Translate(ship.x, ship.y)
-
-	ctx.Call("rotate", ship.dir)
-
+	ctx.Rotate(ship.dir)
 	ctx.StrokeStyle = "black"
 	ctx.LineWidth = 1
 	ctx.BeginPath()
@@ -44,13 +50,31 @@ func (ship Ship) draw(ctx *dom.CanvasRenderingContext2D) {
 }
 
 func updateShip() {
-	if keysPressed.right {
-		ship.dir = ship.dir + math.Pi/16.0
+	leftAdjust := 0.0
+	if keysPressed.left {
+		leftAdjust = (-math.Pi / 16.0)
 	}
 
-	if keysPressed.left {
-		ship.dir = ship.dir + -math.Pi/16.0
+	rightAdjust := 0.0
+	if keysPressed.right {
+		rightAdjust = (math.Pi / 16.0)
 	}
+
+	ship.dir = ship.dir + leftAdjust + rightAdjust
+
+	thrust := 0.0
+	if keysPressed.thrust {
+		thrust = 0.5
+	}
+
+	dx := clamp(-maxSpeed, maxSpeed, ship.dx+thrust*math.Cos(ship.dir-math.Pi/2.0))
+	dy := clamp(-maxSpeed, maxSpeed, ship.dy+thrust*math.Sin(ship.dir-math.Pi/2.0))
+
+	ship.dx = dx
+	ship.dy = dy
+
+	ship.x = math.Mod(canvasWidth+ship.x+ship.dx, canvasWidth)
+	ship.y = math.Mod(canvasHeight+ship.y+ship.dy, canvasHeight)
 }
 
 func update() {
@@ -59,7 +83,7 @@ func update() {
 
 func draw() {
 	ctx.FillStyle = "white"
-	ctx.FillRect(0, 0, canvas.Width, canvas.Height)
+	ctx.FillRect(0.0, 0.0, canvasWidth, canvasHeight)
 
 	ship.draw(ctx)
 }
@@ -67,39 +91,41 @@ func draw() {
 func gameLoop() {
 	update()
 	draw()
-	dom.GetWindow().SetTimeout(gameLoop, 1000/30)
+	dom.Window().Call("setTimeout", gameLoop, 1000/30)
 }
 
 func main() {
-	window := dom.GetWindow()
-	doc := window.Document()
-	canvas = doc.GetElementByID("canvas").(*dom.HTMLCanvasElement)
-	ctx = canvas.GetContext2d()
+	window := dom.Window()
+	doc := window.Document
+	cnvs := canvas.New(doc.GetElementById("canvas").Object)
+	canvasWidth = float64(cnvs.Width)
+	canvasHeight = float64(cnvs.Height)
+	ctx = cnvs.GetContext2D()
 
 	keysPressed = &KeysPressed{false, false, false}
 
-	window.AddEventListener("keydown", false, func(event dom.Event) {
-		ke := event.(*dom.KeyboardEvent)
+	window.AddEventListener("keydown", func(event *dom.Event) {
+		keyCode := event.KeyCode
 
-		keysPressed.left = ke.KeyCode == 65
-		keysPressed.right = ke.KeyCode == 83
-		keysPressed.thrust = ke.KeyCode == 75
+		keysPressed.left = keyCode == 65
+		keysPressed.right = keyCode == 83
+		keysPressed.thrust = keyCode == 75
 	})
 
-	window.AddEventListener("keyup", false, func(event dom.Event) {
-		ke := event.(*dom.KeyboardEvent)
+	window.AddEventListener("keyup", func(event *dom.Event) {
+		keyCode := event.KeyCode
 
-		switch ke.KeyCode {
+		switch keyCode {
 		case 65:
 			keysPressed.left = false
 		case 83:
 			keysPressed.right = false
-		case 76:
+		case 75:
 			keysPressed.thrust = false
 		}
 	})
 
-	ship = &Ship{canvas.Width / 2, canvas.Height / 2, 0, 0, 0}
+	ship = &Ship{canvasWidth / 2.0, canvasHeight / 2.0, 0.0, 0.0, 0.0}
 
 	gameLoop()
 }
