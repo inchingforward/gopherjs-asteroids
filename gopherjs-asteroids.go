@@ -12,9 +12,14 @@ type Ship struct {
 	x, y, dx, dy, dir float64
 }
 
+// A Missile is fired from the Ship to destroy Asteroids.
+type Missile struct {
+	x, y, dx, dy, fuse float64
+}
+
 // KeysPressed contains the current keys being pressed.
 type KeysPressed struct {
-	left, right, thrust bool
+	left, right, thrust, missile bool
 }
 
 const maxSpeed = 6.0
@@ -26,6 +31,7 @@ var (
 	keysPressed  *KeysPressed
 	canvasWidth  float64
 	canvasHeight float64
+	missiles     []Missile
 )
 
 func clamp(lo, hi, x float64) float64 {
@@ -45,6 +51,15 @@ func (ship Ship) draw(ctx *canvas.Context2D) {
 	ctx.LineTo(0, 8)
 	ctx.LineTo(7, 10)
 	ctx.LineTo(0, -10)
+	ctx.Stroke()
+	ctx.Restore()
+}
+
+func (missile Missile) draw(ctx *canvas.Context2D) {
+	ctx.Save()
+	ctx.StrokeStyle = "black"
+	ctx.BeginPath()
+	ctx.Arc(missile.x, missile.y, 2.0, 0.0, 2*math.Pi, false)
 	ctx.Stroke()
 	ctx.Restore()
 }
@@ -77,8 +92,24 @@ func updateShip() {
 	ship.y = math.Mod(canvasHeight+ship.y+ship.dy, canvasHeight)
 }
 
+func updateMissiles() {
+	if keysPressed.missile {
+		dx := ship.dx + 8.0*math.Cos(ship.dir-math.Pi/2.0)
+		dy := ship.dy + 8.0*math.Sin(ship.dir-math.Pi/2.0)
+		missile := Missile{ship.x, ship.y, dx, dy, 50.0}
+		missiles = append(missiles, missile)
+	}
+
+	for _, missile := range missiles {
+		missile.x = math.Mod(canvasWidth+missile.x+missile.dx, canvasWidth)
+		missile.y = math.Mod(canvasHeight+missile.y+missile.dy, canvasHeight)
+		missile.fuse -= 1.0
+	}
+}
+
 func update() {
 	updateShip()
+	updateMissiles()
 }
 
 func draw() {
@@ -86,6 +117,10 @@ func draw() {
 	ctx.FillRect(0.0, 0.0, canvasWidth, canvasHeight)
 
 	ship.draw(ctx)
+
+	for _, missile := range missiles {
+		missile.draw(ctx)
+	}
 }
 
 func gameLoop() {
@@ -101,15 +136,17 @@ func main() {
 	canvasWidth = float64(cnvs.Width)
 	canvasHeight = float64(cnvs.Height)
 	ctx = cnvs.GetContext2D()
+	missiles = make([]Missile, 0)
 
-	keysPressed = &KeysPressed{false, false, false}
+	keysPressed = &KeysPressed{false, false, false, false}
 
 	window.AddEventListener("keydown", func(event *dom.Event) {
 		keyCode := event.KeyCode
 
-		keysPressed.left = keyCode == 65
-		keysPressed.right = keyCode == 83
-		keysPressed.thrust = keyCode == 75
+		keysPressed.left = keyCode == 65    // a
+		keysPressed.right = keyCode == 83   // s
+		keysPressed.thrust = keyCode == 75  // k
+		keysPressed.missile = keyCode == 76 // l
 	})
 
 	window.AddEventListener("keyup", func(event *dom.Event) {
@@ -122,6 +159,8 @@ func main() {
 			keysPressed.right = false
 		case 75:
 			keysPressed.thrust = false
+		case 76:
+			keysPressed.missile = false
 		}
 	})
 
