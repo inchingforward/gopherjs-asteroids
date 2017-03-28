@@ -2,6 +2,7 @@ package main
 
 import (
 	"math"
+	"math/rand"
 
 	"github.com/oskca/gopherjs-canvas"
 	"github.com/oskca/gopherjs-dom"
@@ -10,6 +11,12 @@ import (
 // A Ship is the player.
 type Ship struct {
 	x, y, dx, dy, dir float64
+}
+
+// An Asteroid floats through space and can kill the player.
+type Asteroid struct {
+	x, y, dx, dy, dir, spin, r float64
+	path                       []float64
 }
 
 // A Missile is fired from the Ship to destroy Asteroids.
@@ -31,8 +38,21 @@ var (
 	keysPressed  *KeysPressed
 	canvasWidth  float64
 	canvasHeight float64
+	asteroids    []*Asteroid
 	missiles     []*Missile
 )
+
+func randomRange(min, max float64) float64 {
+	return min + rand.Float64()*(max-min)
+}
+
+func randomSign() float64 {
+	if rand.Float32() < 0.5 {
+		return -1
+	}
+
+	return 1
+}
 
 func clamp(lo, hi, x float64) float64 {
 	return math.Max(lo, math.Min(hi, x))
@@ -51,6 +71,20 @@ func (ship Ship) draw(ctx *canvas.Context2D) {
 	ctx.LineTo(0, 8)
 	ctx.LineTo(7, 10)
 	ctx.LineTo(0, -10)
+	ctx.Stroke()
+	ctx.Restore()
+}
+
+func (asteroid Asteroid) draw(ctx *canvas.Context2D) {
+	ctx.Save()
+	ctx.Translate(asteroid.x, asteroid.y)
+	ctx.Rotate(asteroid.dir)
+	ctx.StrokeStyle = "black"
+	ctx.LineWidth = 1
+	ctx.BeginPath()
+
+	// Asteroid path drawing
+
 	ctx.Stroke()
 	ctx.Restore()
 }
@@ -92,6 +126,10 @@ func updateShip() {
 	ship.y = math.Mod(canvasHeight+ship.y+ship.dy, canvasHeight)
 }
 
+func updateAsteroids() {
+
+}
+
 func updateMissiles() {
 	if keysPressed.missile {
 		dx := ship.dx + 8.0*math.Cos(ship.dir-math.Pi/2.0)
@@ -117,6 +155,7 @@ func updateMissiles() {
 
 func update() {
 	updateShip()
+	updateAsteroids()
 	updateMissiles()
 }
 
@@ -125,6 +164,10 @@ func draw() {
 	ctx.FillRect(0.0, 0.0, canvasWidth, canvasHeight)
 
 	ship.draw(ctx)
+
+	for _, asteroid := range asteroids {
+		asteroid.draw(ctx)
+	}
 
 	for _, missile := range missiles {
 		missile.draw(ctx)
@@ -150,6 +193,30 @@ func updateKeysPressed(keyCode int, pressed bool) {
 	}
 }
 
+func makeAsteroidPath() []float64 {
+	path := make([]float64, 12)
+
+	for i := range path {
+		path[i] = randomRange(0.7, 1.1)
+	}
+
+	return path
+}
+
+func makeAsteroids() {
+	asteroids = make([]*Asteroid, 10)
+
+	for i := range asteroids {
+		path := makeAsteroidPath()
+		x := randomRange(0, canvasWidth)
+		y := randomRange(0, canvasHeight)
+		dx := randomRange(1, 2) * randomSign()
+		dy := randomRange(1, 2) * randomSign()
+		spin := randomRange(-0.1, 0.1)
+		asteroids[i] = &Asteroid{x, y, dx, dy, 0, spin, 50, path}
+	}
+}
+
 func main() {
 	window := dom.Window()
 	doc := window.Document
@@ -157,9 +224,11 @@ func main() {
 	canvasWidth = float64(cnvs.Width)
 	canvasHeight = float64(cnvs.Height)
 	ctx = cnvs.GetContext2D()
-	missiles = make([]*Missile, 0)
 
+	ship = &Ship{canvasWidth / 2.0, canvasHeight / 2.0, 0.0, 0.0, 0.0}
+	missiles = make([]*Missile, 0)
 	keysPressed = &KeysPressed{false, false, false, false}
+	makeAsteroids()
 
 	window.AddEventListener("keydown", func(event *dom.Event) {
 		updateKeysPressed(event.KeyCode, true)
@@ -168,8 +237,6 @@ func main() {
 	window.AddEventListener("keyup", func(event *dom.Event) {
 		updateKeysPressed(event.KeyCode, false)
 	})
-
-	ship = &Ship{canvasWidth / 2.0, canvasHeight / 2.0, 0.0, 0.0, 0.0}
 
 	gameLoop()
 }
