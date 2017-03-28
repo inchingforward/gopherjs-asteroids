@@ -137,6 +137,19 @@ func gameLoop() {
 	dom.Window().Call("setTimeout", gameLoop, 1000/30)
 }
 
+func updateKeysPressed(keyCode int, pressed bool) {
+	switch keyCode {
+	case 65: // a
+		keysPressed.left = pressed
+	case 83: // s
+		keysPressed.right = pressed
+	case 75: // k
+		keysPressed.thrust = pressed
+	case 76: // l
+		keysPressed.missile = pressed
+	}
+}
+
 func main() {
 	window := dom.Window()
 	doc := window.Document
@@ -149,27 +162,11 @@ func main() {
 	keysPressed = &KeysPressed{false, false, false, false}
 
 	window.AddEventListener("keydown", func(event *dom.Event) {
-		keyCode := event.KeyCode
-
-		keysPressed.left = keyCode == 65    // a
-		keysPressed.right = keyCode == 83   // s
-		keysPressed.thrust = keyCode == 75  // k
-		keysPressed.missile = keyCode == 76 // l
+		updateKeysPressed(event.KeyCode, true)
 	})
 
 	window.AddEventListener("keyup", func(event *dom.Event) {
-		keyCode := event.KeyCode
-
-		switch keyCode {
-		case 65:
-			keysPressed.left = false
-		case 83:
-			keysPressed.right = false
-		case 75:
-			keysPressed.thrust = false
-		case 76:
-			keysPressed.missile = false
-		}
+		updateKeysPressed(event.KeyCode, false)
 	})
 
 	ship = &Ship{canvasWidth / 2.0, canvasHeight / 2.0, 0.0, 0.0, 0.0}
