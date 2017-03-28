@@ -31,7 +31,7 @@ var (
 	keysPressed  *KeysPressed
 	canvasWidth  float64
 	canvasHeight float64
-	missiles     []Missile
+	missiles     []*Missile
 )
 
 func clamp(lo, hi, x float64) float64 {
@@ -97,14 +97,22 @@ func updateMissiles() {
 		dx := ship.dx + 8.0*math.Cos(ship.dir-math.Pi/2.0)
 		dy := ship.dy + 8.0*math.Sin(ship.dir-math.Pi/2.0)
 		missile := Missile{ship.x, ship.y, dx, dy, 50.0}
-		missiles = append(missiles, missile)
+		missiles = append(missiles, &missile)
 	}
 
+	k := 0
 	for _, missile := range missiles {
-		missile.x = math.Mod(canvasWidth+missile.x+missile.dx, canvasWidth)
-		missile.y = math.Mod(canvasHeight+missile.y+missile.dy, canvasHeight)
 		missile.fuse -= 1.0
+
+		if missile.fuse != 0 {
+			missile.x = math.Mod(canvasWidth+missile.x+missile.dx, canvasWidth)
+			missile.y = math.Mod(canvasHeight+missile.y+missile.dy, canvasHeight)
+			missiles[k] = missile
+			k++
+		}
 	}
+
+	missiles = missiles[:k]
 }
 
 func update() {
@@ -136,7 +144,7 @@ func main() {
 	canvasWidth = float64(cnvs.Width)
 	canvasHeight = float64(cnvs.Height)
 	ctx = cnvs.GetContext2D()
-	missiles = make([]Missile, 0)
+	missiles = make([]*Missile, 0)
 
 	keysPressed = &KeysPressed{false, false, false, false}
 
