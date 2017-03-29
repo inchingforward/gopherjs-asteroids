@@ -3,7 +3,7 @@ Asteroids implemented with [GopherJS](https://github.com/gopherjs/gopherjs), the
 
 ## Play
 
-Playable builds are released [here](http://mikejanger.net/gopherjs-asteroids).
+Playable builds are released [here](http://mikejanger.net/asteroids).
 
 ## Inspiration
 
