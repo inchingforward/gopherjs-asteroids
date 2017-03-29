@@ -30,6 +30,7 @@ type KeysPressed struct {
 }
 
 const maxSpeed = 6.0
+const twoPi = math.Pi * 2
 
 var (
 	ship         *Ship
@@ -83,7 +84,17 @@ func (asteroid Asteroid) draw(ctx *canvas.Context2D) {
 	ctx.LineWidth = 1
 	ctx.BeginPath()
 
-	// Asteroid path drawing
+	lenFloat := float64(len(asteroid.path))
+	theta := lenFloat * (twoPi / lenFloat)
+	off := asteroid.path[len(asteroid.path)-1]
+
+	ctx.MoveTo(asteroid.r*off*math.Cos(theta), asteroid.r*off*math.Sin(theta))
+
+	for i, off := range asteroid.path {
+		theta := float64(i+1) * (twoPi / lenFloat)
+
+		ctx.LineTo(asteroid.r*off*math.Cos(theta), asteroid.r*off*math.Sin(theta))
+	}
 
 	ctx.Stroke()
 	ctx.Restore()
@@ -93,7 +104,7 @@ func (missile Missile) draw(ctx *canvas.Context2D) {
 	ctx.Save()
 	ctx.StrokeStyle = "black"
 	ctx.BeginPath()
-	ctx.Arc(missile.x, missile.y, 2.0, 0.0, 2*math.Pi, false)
+	ctx.Arc(missile.x, missile.y, 2.0, 0.0, twoPi, false)
 	ctx.Stroke()
 	ctx.Restore()
 }
@@ -127,7 +138,17 @@ func updateShip() {
 }
 
 func updateAsteroids() {
+	for _, asteroid := range asteroids {
+		asteroid.x = math.Mod(canvasWidth+asteroid.x+asteroid.dx, canvasWidth)
+		asteroid.y = math.Mod(canvasHeight+asteroid.y+asteroid.dy, canvasHeight)
 
+		dir := asteroid.dir + asteroid.spin
+		if dir > twoPi {
+			dir = dir - twoPi
+		}
+
+		asteroid.dir = dir
+	}
 }
 
 func updateMissiles() {
