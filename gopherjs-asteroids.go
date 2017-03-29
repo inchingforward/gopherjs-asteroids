@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 
@@ -216,7 +215,18 @@ func updateKeysPressed(keyCode int, pressed bool) {
 }
 
 func updateMouseDown(mouseX int, mouseY int, mouseDown bool) {
-	fmt.Printf("mousedown: %v, %v, %v\n", mouseX, mouseY, mouseDown)
+	mid := int(canvasWidth / 2)
+	bottom := int(canvasHeight * .75)
+
+	if mouseX < mid && mouseY < bottom {
+		keysPressed.left = mouseDown
+	} else if mouseX < mid && mouseY > bottom {
+		keysPressed.missile = mouseDown
+	} else if mouseX > mid && mouseY < bottom {
+		keysPressed.right = mouseDown
+	} else if mouseX > mid && mouseY > bottom {
+		keysPressed.thrust = mouseDown
+	}
 }
 
 func makeAsteroidPath() []float64 {
