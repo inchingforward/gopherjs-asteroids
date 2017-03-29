@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 
@@ -214,6 +215,10 @@ func updateKeysPressed(keyCode int, pressed bool) {
 	}
 }
 
+func updateMouseDown(mouseX int, mouseY int, mouseDown bool) {
+	fmt.Printf("mousedown: %v, %v, %v\n", mouseX, mouseY, mouseDown)
+}
+
 func makeAsteroidPath() []float64 {
 	path := make([]float64, 12)
 
@@ -257,6 +262,14 @@ func main() {
 
 	window.AddEventListener("keyup", func(event *dom.Event) {
 		updateKeysPressed(event.KeyCode, false)
+	})
+
+	window.AddEventListener("mousedown", func(event *dom.Event) {
+		updateMouseDown(event.ClientX, event.ClientY, true)
+	})
+
+	window.AddEventListener("mouseup", func(event *dom.Event) {
+		updateMouseDown(event.ClientX, event.ClientY, false)
 	})
 
 	gameLoop()
