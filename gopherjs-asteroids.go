@@ -266,19 +266,19 @@ func main() {
 	keysPressed = &KeysPressed{false, false, false, false}
 	makeAsteroids()
 
-	window.AddEventListener("keydown", func(event *dom.Event) {
+	window.AddEventListener(dom.EvtKeydown, func(event *dom.Event) {
 		updateKeysPressed(event.KeyCode, true)
 	})
 
-	window.AddEventListener("keyup", func(event *dom.Event) {
+	window.AddEventListener(dom.EvtKeyup, func(event *dom.Event) {
 		updateKeysPressed(event.KeyCode, false)
 	})
 
-	window.AddEventListener("mousedown", func(event *dom.Event) {
+	window.AddEventListener(dom.EvtMousedown, func(event *dom.Event) {
 		updateMouseDown(event.ClientX, event.ClientY, true)
 	})
 
-	window.AddEventListener("mouseup", func(event *dom.Event) {
+	window.AddEventListener(dom.EvtMouseup, func(event *dom.Event) {
 		updateMouseDown(event.ClientX, event.ClientY, false)
 	})
 
