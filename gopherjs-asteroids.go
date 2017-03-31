@@ -4,6 +4,8 @@ import (
 	"math"
 	"math/rand"
 
+	"time"
+
 	"github.com/oskca/gopherjs-canvas"
 	"github.com/oskca/gopherjs-dom"
 )
@@ -39,16 +41,17 @@ var (
 	keysPressed  *KeysPressed
 	canvasWidth  float64
 	canvasHeight float64
+	rng          *rand.Rand
 	asteroids    []*Asteroid
 	missiles     []*Missile
 )
 
 func randomRange(min, max float64) float64 {
-	return min + rand.Float64()*(max-min)
+	return min + rng.Float64()*(max-min)
 }
 
 func randomSign() float64 {
-	if rand.Float32() < 0.5 {
+	if rng.Float32() < 0.5 {
 		return -1
 	}
 
@@ -260,6 +263,8 @@ func main() {
 	canvasWidth = float64(cnvs.Width)
 	canvasHeight = float64(cnvs.Height)
 	ctx = cnvs.GetContext2D()
+
+	rng = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	ship = &Ship{canvasWidth / 2.0, canvasHeight / 2.0, 0.0, 0.0, 0.0}
 	missiles = make([]*Missile, 0)
