@@ -31,8 +31,18 @@ type KeysPressed struct {
 	left, right, thrust, missile bool
 }
 
-const maxSpeed = 6.0
-const twoPi = math.Pi * 2
+const (
+	maxSpeed      = 6.0
+	twoPi         = math.Pi * 2
+	keyA          = 65
+	keyS          = 83
+	keyK          = 75
+	keyL          = 76
+	keyLeftArrow  = 37
+	keyRightArrow = 39
+	keyUpArrow    = 38
+	keySpace      = 32
+)
 
 var (
 	ship         *Ship
@@ -206,29 +216,14 @@ func gameLoop() {
 
 func updateKeysPressed(keyCode int, pressed bool) {
 	switch keyCode {
-	case 65: // a
+	case keyA, keyLeftArrow: // a
 		keysPressed.left = pressed
-	case 83: // s
+	case keyS, keyRightArrow: // s
 		keysPressed.right = pressed
-	case 75: // k
+	case keyK, keyUpArrow: // k
 		keysPressed.thrust = pressed
-	case 76: // l
+	case keyL, keySpace: // l
 		keysPressed.missile = pressed
-	}
-}
-
-func updateMouseDown(mouseX int, mouseY int, mouseDown bool) {
-	mid := int(canvasWidth / 2)
-	bottom := int(canvasHeight * .75)
-
-	if mouseX < mid && mouseY < bottom {
-		keysPressed.left = mouseDown
-	} else if mouseX < mid && mouseY > bottom {
-		keysPressed.missile = mouseDown
-	} else if mouseX > mid && mouseY < bottom {
-		keysPressed.right = mouseDown
-	} else if mouseX > mid && mouseY > bottom {
-		keysPressed.thrust = mouseDown
 	}
 }
 
@@ -277,14 +272,6 @@ func main() {
 
 	window.AddEventListener(dom.EvtKeyup, func(event *dom.Event) {
 		updateKeysPressed(event.KeyCode, false)
-	})
-
-	window.AddEventListener(dom.EvtMousedown, func(event *dom.Event) {
-		updateMouseDown(event.ClientX, event.ClientY, true)
-	})
-
-	window.AddEventListener(dom.EvtMouseup, func(event *dom.Event) {
-		updateMouseDown(event.ClientX, event.ClientY, false)
 	})
 
 	gameLoop()
