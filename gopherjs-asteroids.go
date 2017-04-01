@@ -52,8 +52,8 @@ var (
 	canvasWidth  float64
 	canvasHeight float64
 	rng          *rand.Rand
-	asteroids    []*Asteroid
-	missiles     []*Missile
+	asteroids    []Asteroid
+	missiles     []Missile
 )
 
 func randomRange(min, max float64) float64 {
@@ -151,16 +151,16 @@ func updateShip() {
 }
 
 func updateAsteroids() {
-	for _, asteroid := range asteroids {
-		asteroid.x = math.Mod(canvasWidth+asteroid.x+asteroid.dx, canvasWidth)
-		asteroid.y = math.Mod(canvasHeight+asteroid.y+asteroid.dy, canvasHeight)
+	for i, asteroid := range asteroids {
+		asteroids[i].x = math.Mod(canvasWidth+asteroid.x+asteroid.dx, canvasWidth)
+		asteroids[i].y = math.Mod(canvasHeight+asteroid.y+asteroid.dy, canvasHeight)
 
 		dir := asteroid.dir + asteroid.spin
 		if dir > twoPi {
 			dir = dir - twoPi
 		}
 
-		asteroid.dir = dir
+		asteroids[i].dir = dir
 	}
 }
 
@@ -169,7 +169,7 @@ func updateMissiles() {
 		dx := ship.dx + 8.0*math.Cos(ship.dir-math.Pi/2.0)
 		dy := ship.dy + 8.0*math.Sin(ship.dir-math.Pi/2.0)
 		missile := Missile{ship.x, ship.y, dx, dy, 50.0}
-		missiles = append(missiles, &missile)
+		missiles = append(missiles, missile)
 	}
 
 	k := 0
@@ -238,7 +238,7 @@ func makeAsteroidPath() []float64 {
 }
 
 func makeAsteroids() {
-	asteroids = make([]*Asteroid, 10)
+	asteroids = make([]Asteroid, 10)
 
 	for i := range asteroids {
 		path := makeAsteroidPath()
@@ -247,7 +247,7 @@ func makeAsteroids() {
 		dx := randomRange(1, 2) * randomSign()
 		dy := randomRange(1, 2) * randomSign()
 		spin := randomRange(-0.1, 0.1)
-		asteroids[i] = &Asteroid{x, y, dx, dy, 0, spin, 50, path}
+		asteroids[i] = Asteroid{x, y, dx, dy, 0, spin, 50, path}
 	}
 }
 
@@ -262,7 +262,7 @@ func main() {
 	rng = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	ship = &Ship{canvasWidth / 2.0, canvasHeight / 2.0, 0.0, 0.0, 0.0}
-	missiles = make([]*Missile, 0)
+	missiles = make([]Missile, 0)
 	keysPressed = &KeysPressed{false, false, false, false}
 	makeAsteroids()
 
