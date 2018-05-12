@@ -253,8 +253,9 @@ func makeAsteroids() {
 
 func main() {
 	window := dom.Window()
-	doc := window.Document
+	doc := dom.Document()
 	cnvs := canvas.New(doc.GetElementById("canvas").Object)
+
 	canvasWidth = float64(cnvs.Width)
 	canvasHeight = float64(cnvs.Height)
 	ctx = cnvs.GetContext2D()
