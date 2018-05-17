@@ -33,6 +33,7 @@ type KeysPressed struct {
 
 const (
 	maxSpeed      = 6.0
+	maxMissiles   = 3
 	twoPi         = math.Pi * 2
 	keyA          = 65
 	keyS          = 83
@@ -76,7 +77,7 @@ func (ship Ship) draw(ctx *canvas.Context2D) {
 	ctx.Save()
 	ctx.Translate(ship.x, ship.y)
 	ctx.Rotate(ship.dir)
-	ctx.StrokeStyle = "black"
+	ctx.StrokeStyle = "#00ADD8"
 	ctx.LineWidth = 1
 	ctx.BeginPath()
 	ctx.MoveTo(0, -1)
@@ -93,7 +94,7 @@ func (asteroid Asteroid) draw(ctx *canvas.Context2D) {
 	ctx.Save()
 	ctx.Translate(asteroid.x, asteroid.y)
 	ctx.Rotate(asteroid.dir)
-	ctx.StrokeStyle = "black"
+	ctx.StrokeStyle = "#5DC9E2"
 	ctx.LineWidth = 1
 	ctx.BeginPath()
 
@@ -115,9 +116,9 @@ func (asteroid Asteroid) draw(ctx *canvas.Context2D) {
 
 func (missile Missile) draw(ctx *canvas.Context2D) {
 	ctx.Save()
-	ctx.StrokeStyle = "black"
+	ctx.StrokeStyle = "#00ADD8"
 	ctx.BeginPath()
-	ctx.Arc(missile.x, missile.y, 2.0, 0.0, twoPi, false)
+	ctx.Arc(missile.x, missile.y, 1.0, 0.0, twoPi, false)
 	ctx.Stroke()
 	ctx.Restore()
 }
@@ -165,7 +166,7 @@ func updateAsteroids() {
 }
 
 func updateMissiles() {
-	if keysPressed.missile {
+	if keysPressed.missile && len(missiles) < maxMissiles {
 		dx := ship.dx + 8.0*math.Cos(ship.dir-math.Pi/2.0)
 		dy := ship.dy + 8.0*math.Sin(ship.dir-math.Pi/2.0)
 		missile := Missile{ship.x, ship.y, dx, dy, 50.0}
