@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 
@@ -55,6 +56,7 @@ var (
 	rng          *rand.Rand
 	asteroids    []Asteroid
 	missiles     []Missile
+	score        int
 )
 
 func randomRange(min, max float64) float64 {
@@ -120,6 +122,16 @@ func (missile Missile) draw(ctx *canvas.Context2D) {
 	ctx.BeginPath()
 	ctx.Arc(missile.x, missile.y, 1.0, 0.0, twoPi, false)
 	ctx.Stroke()
+	ctx.Restore()
+}
+
+func drawScore() {
+	scoreText := fmt.Sprintf("Score: %d", score)
+
+	ctx.Save()
+	ctx.FillStyle = "#00ADD8"
+	ctx.Font = "16px silkscreen"
+	ctx.FillText(scoreText, 20, 20, 100.0)
 	ctx.Restore()
 }
 
@@ -207,6 +219,9 @@ func draw() {
 	for _, missile := range missiles {
 		missile.draw(ctx)
 	}
+
+	// Score
+	drawScore()
 }
 
 func gameLoop() {
