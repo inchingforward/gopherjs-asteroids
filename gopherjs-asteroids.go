@@ -33,8 +33,8 @@ type KeysPressed struct {
 }
 
 const (
+	fps           = 30
 	maxSpeed      = 6.0
-	maxMissiles   = 3
 	twoPi         = math.Pi * 2
 	keyA          = 65
 	keyS          = 83
@@ -56,6 +56,7 @@ var (
 	rng          *rand.Rand
 	asteroids    []Asteroid
 	missiles     []Missile
+	missileTimer int
 	score        int
 )
 
@@ -178,11 +179,20 @@ func updateAsteroids() {
 }
 
 func updateMissiles() {
-	if keysPressed.missile && len(missiles) < maxMissiles {
+	if missileTimer != 0 {
+		missileTimer++
+
+		if missileTimer >= fps/3 {
+			missileTimer = 0
+		}
+	}
+
+	if keysPressed.missile && missileTimer == 0 {
 		dx := ship.dx + 8.0*math.Cos(ship.dir-math.Pi/2.0)
 		dy := ship.dy + 8.0*math.Sin(ship.dir-math.Pi/2.0)
 		missile := Missile{ship.x, ship.y, dx, dy, 50.0}
 		missiles = append(missiles, missile)
+		missileTimer = 1
 	}
 
 	k := 0
@@ -227,7 +237,7 @@ func draw() {
 func gameLoop() {
 	update()
 	draw()
-	dom.Window().Call("setTimeout", gameLoop, 1000/30)
+	dom.Window().Call("setTimeout", gameLoop, 1000/fps)
 }
 
 func updateKeysPressed(keyCode int, pressed bool) {
@@ -280,6 +290,7 @@ func main() {
 
 	ship = &Ship{canvasWidth / 2.0, canvasHeight / 2.0, 0.0, 0.0, 0.0}
 	missiles = make([]Missile, 0)
+	missileTimer = 0
 	keysPressed = &KeysPressed{false, false, false, false}
 	makeAsteroids()
 
